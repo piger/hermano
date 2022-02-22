@@ -15,6 +15,10 @@ type Config struct {
 	Ignored  []string `toml:"ignored"`
 }
 
+func (c *Config) CanNotify() bool {
+	return c.UserKey != "" && c.APIToken != ""
+}
+
 // ReadConfig reads the configuration file and returns a *Config object.
 func ReadConfig(filename string) (*Config, error) {
 	fh, err := os.Open(filename)

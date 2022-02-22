@@ -70,7 +70,7 @@ func checkPage(conf *config.Config, ignored map[string]struct{}) error {
 		msg := fmt.Sprintf("%s (%s) available=%v - %s", product.Name, product.Price, product.Available, product.Link)
 		fmt.Println(msg)
 
-		if product.Available {
+		if product.Available && conf.CanNotify() {
 			if err := notify.Notify(conf, msg); err != nil {
 				log.Printf("error sending notification: %s", err)
 			}
