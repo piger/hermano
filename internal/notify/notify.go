@@ -12,8 +12,8 @@ import (
 // Pushover's endpoint to send Push Notifications.
 const endpoint = "https://api.pushover.net/1/messages.json"
 
-// Payload is the data structure used to send a Push notification in Pushover.
-type Payload struct {
+// payload is the data structure used to send a Push notification in Pushover.
+type payload struct {
 	Token   string `json:"token"`
 	UserKey string `json:"user"`
 	Message string `json:"message"`
@@ -21,7 +21,7 @@ type Payload struct {
 
 // Notify sends a Push notification with Pushvoer.
 func Notify(config *config.Config, message string) error {
-	p := Payload{
+	p := payload{
 		Token:   config.APIToken,
 		UserKey: config.UserKey,
 		Message: message,
