@@ -19,7 +19,7 @@ type payload struct {
 	Message string `json:"message"`
 }
 
-// Notify sends a Push notification with Pushvoer.
+// Notify sends a Push notification with Pushover.
 func Notify(config *config.Config, message string) error {
 	p := payload{
 		Token:   config.APIToken,
