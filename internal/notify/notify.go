@@ -9,14 +9,17 @@ import (
 	"github.com/piger/hermano/internal/config"
 )
 
+// Pushover's endpoint to send Push Notifications.
 const endpoint = "https://api.pushover.net/1/messages.json"
 
+// Payload is the data structure used to send a Push notification in Pushover.
 type Payload struct {
 	Token   string `json:"token"`
 	UserKey string `json:"user"`
 	Message string `json:"message"`
 }
 
+// Notify sends a Push notification with Pushvoer.
 func Notify(config *config.Config, message string) error {
 	p := Payload{
 		Token:   config.APIToken,

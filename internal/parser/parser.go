@@ -8,6 +8,8 @@ import (
 	"github.com/anaskhan96/soup"
 )
 
+// Product is a product from the web shop; it's just a data container describing
+// each chair on sale.
 type Product struct {
 	Name      string
 	Price     string
@@ -15,6 +17,8 @@ type Product struct {
 	Available bool
 }
 
+// ParsePage analyse the HTML contents of the store's page and extracts all the information
+// about each chair on sale.
 func ParsePage(contents []byte) ([]Product, error) {
 	var result []Product
 

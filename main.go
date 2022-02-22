@@ -21,8 +21,11 @@ var (
 	interval       = flag.Duration("interval", 30*time.Minute, "Polling interval")
 )
 
+// The URL of the store selling products.
 const storeURL = "https://usedaeronireland.ie/used-herman-miller-aeron-chairs/"
 
+// fetchProducts download the remote sale page and extract all sale information; it returns
+// an array of Product objects describing each product on sale.
 func fetchProducts() ([]parser.Product, error) {
 	var result []parser.Product
 
@@ -50,6 +53,8 @@ func fetchProducts() ([]parser.Product, error) {
 	return result, nil
 }
 
+// checkPage downloads the sales page from the website and print any offer that is found.
+// This function should be called at the desired interval.
 func checkPage(conf *config.Config, ignored map[string]struct{}) error {
 	log.Printf("checking for offers")
 
@@ -81,16 +86,19 @@ func run() error {
 		return fmt.Errorf("error reading configuration file %q: %s", *configFilename, err)
 	}
 
+	// set up signal handler and ticker
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	t := time.NewTicker(*interval)
 	defer t.Stop()
 
+	// build a map of products to ignore, for easy lookup.
 	ignored := make(map[string]struct{})
 	for _, ig := range conf.Ignored {
 		ignored[ig] = struct{}{}
 	}
 
+	// check the page initially and then every $interval seconds.
 	if err := checkPage(conf, ignored); err != nil {
 		log.Println(err)
 	}
