@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/piger/hermano/internal/config"
+	"github.com/piger/hermano/internal/notify"
 	"github.com/piger/hermano/internal/parser"
 )
 
@@ -20,6 +22,56 @@ var (
 )
 
 const storeURL = "https://usedaeronireland.ie/used-herman-miller-aeron-chairs/"
+
+func fetchProducts() ([]parser.Product, error) {
+	var result []parser.Product
+
+	resp, err := http.Get(storeURL)
+	if err != nil {
+		return result, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return result, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	contents, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return result, err
+	}
+
+	products, err := parser.ParsePage(contents)
+	if err != nil {
+		return result, err
+	}
+
+	result = append(result, products...)
+	return result, nil
+}
+
+func checkPage(conf *config.Config, ignored map[string]struct{}) error {
+	products, err := fetchProducts()
+	if err != nil {
+		return err
+	}
+
+	for _, product := range products {
+		if _, ok := ignored[product.Name]; ok {
+			continue
+		}
+		msg := fmt.Sprintf("%s (%s) available=%v - %s", product.Name, product.Price, product.Available, product.Link)
+		fmt.Println(msg)
+
+		if product.Available {
+			if err := notify.Notify(conf, msg); err != nil {
+				log.Printf("error sending notification: %s", err)
+			}
+		}
+	}
+
+	return nil
+}
 
 func run() error {
 	conf, err := config.ReadConfig(*configFilename)
@@ -37,27 +89,24 @@ func run() error {
 		ignored[ig] = struct{}{}
 	}
 
-	fh, err := os.Open("page.html")
-	if err != nil {
-		return err
-	}
-	defer fh.Close()
-
-	contents, err := io.ReadAll(fh)
-	if err != nil {
-		return err
+	log.Printf("checking for offers")
+	if err := checkPage(conf, ignored); err != nil {
+		log.Println(err)
 	}
 
-	products, err := parser.ParsePage(contents)
-	if err != nil {
-		return err
-	}
+Loop:
+	for {
+		select {
+		case <-t.C:
+			log.Printf("checking for offers")
+			if err := checkPage(conf, ignored); err != nil {
+				log.Println(err)
+			}
 
-	for i, product := range products {
-		if _, ok := ignored[product.Name]; ok {
-			continue
+		case s := <-sig:
+			log.Printf("signal received: %s", s)
+			break Loop
 		}
-		fmt.Printf("%d: %s (%s) available=%v - %s\n", i+1, product.Name, product.Price, product.Available, product.Link)
 	}
 
 	return nil
