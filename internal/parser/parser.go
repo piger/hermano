@@ -23,8 +23,7 @@ func ParsePage(contents []byte) ([]Product, error) {
 		return result, doc.Error
 	}
 
-	products := doc.FindAll("li", "class", "product")
-	for _, product := range products {
+	for _, product := range doc.FindAll("li", "class", "product") {
 		h2 := product.Find("h2")
 		if h2.Error != nil {
 			log.Printf("cannot find title (h2) in product")
