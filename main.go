@@ -76,6 +76,7 @@ func checkPage(conf *config.Config, ignored map[string]struct{}) error {
 			}
 		}
 	}
+	fmt.Println("")
 
 	return nil
 }
