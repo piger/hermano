@@ -63,7 +63,7 @@ func checkPage(conf *config.Config, ignored map[string]struct{}) error {
 		return err
 	}
 
-	var anyAvailable bool
+	var productsAvailable int
 
 	for _, product := range products {
 		if _, ok := ignored[product.Name]; ok {
@@ -72,13 +72,13 @@ func checkPage(conf *config.Config, ignored map[string]struct{}) error {
 		fmt.Printf("%s (%s) available=%v - %s\n", product.Name, product.Price, product.Available, product.Link)
 
 		if product.Available {
-			anyAvailable = true
+			productsAvailable += 1
 		}
 	}
 	fmt.Println("")
 
-	if anyAvailable && conf.CanNotify() {
-		if err := notify.Notify(conf, "There are Herman Miller Aeron available!"); err != nil {
+	if productsAvailable > 0 && conf.CanNotify() {
+		if err := notify.Notify(conf, fmt.Sprintf("There are %d Herman Miller Aeron available!", productsAvailable)); err != nil {
 			log.Printf("error sending notification: %s", err)
 		}
 	}
