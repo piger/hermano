@@ -51,6 +51,8 @@ func fetchProducts() ([]parser.Product, error) {
 }
 
 func checkPage(conf *config.Config, ignored map[string]struct{}) error {
+	log.Printf("checking for offers")
+
 	products, err := fetchProducts()
 	if err != nil {
 		return err
@@ -89,7 +91,6 @@ func run() error {
 		ignored[ig] = struct{}{}
 	}
 
-	log.Printf("checking for offers")
 	if err := checkPage(conf, ignored); err != nil {
 		log.Println(err)
 	}
@@ -98,7 +99,6 @@ Loop:
 	for {
 		select {
 		case <-t.C:
-			log.Printf("checking for offers")
 			if err := checkPage(conf, ignored); err != nil {
 				log.Println(err)
 			}

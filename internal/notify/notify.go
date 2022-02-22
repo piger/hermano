@@ -34,6 +34,7 @@ func Notify(config *config.Config, message string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("error sending notification: status=%d", resp.StatusCode)
