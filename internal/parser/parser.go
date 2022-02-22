@@ -42,7 +42,11 @@ func ParsePage(contents []byte) ([]Product, error) {
 			continue
 		}
 
-		link := a.Attrs()["href"]
+		link, ok := a.Attrs()["href"]
+		if !ok {
+			log.Printf("cannot find href in <a> for %s", title)
+			continue
+		}
 
 		bdi := product.Find("bdi")
 		if bdi.Error != nil {
@@ -53,7 +57,14 @@ func ParsePage(contents []byte) ([]Product, error) {
 		price := bdi.Text()
 		price = strings.Trim(price, "\u00a0")
 
-		currency := bdi.Find("span").Text()
+		var currency string
+		currency_span := bdi.Find("span")
+		if currency_span.Error != nil {
+			// assume euro if we fail to parse this span
+			currency = "€"
+		} else {
+			currency = currency_span.Text()
+		}
 		price = fmt.Sprintf("%s %s", currency, price)
 
 		available := true
